@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>docreader-ocr — распознавание российских документов</title>
+  <meta name="description" content="Демонстрация Python-библиотеки docreader-ocr: паспорт РФ, СНИЛС, аттестат и диплом.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f5bea'/%3E%3Cpath d='M9 8h9l5 5v11H9z' fill='none' stroke='white' stroke-width='2'/%3E%3Cpath d='M12 16h8M12 20h6' stroke='white' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="#top">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32"><rect width="32" height="32" rx="8"/><path d="M9 8h9l5 5v11H9z"/><path d="M12 16h8M12 20h6"/></svg>
+        </span>
+        docreader-ocr
+      </a>
+      <nav class="nav">
+        <a href="#demo">Демо</a>
+        <a href="#pipeline">Как работает</a>
+        <a href="#metrics">Метрики</a>
+        <a href="#integration">Интеграция</a>
+        <a href="#team">Команда</a>
+      </nav>
+      <div class="status" id="status" title="Состояние моделей на сервере">
+        <span class="dot"></span><span class="status-text">Подключение…</span>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <p class="eyebrow">Python-библиотека · MIT · 152-ФЗ</p>
+          <h1>Распознавай.<br><span class="accent">Не вводи вручную.</span></h1>
+          <p class="lead">
+            docreader-ocr извлекает структурированные данные из фотографий российских документов:
+            находит документы на снимке, определяет их тип, детектирует поля и распознаёт текст.
+            Всё локально, без внешних API.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#demo">Попробовать на своём фото</a>
+            <button class="install" id="copyInstall" type="button" title="Скопировать">
+              <span class="prompt">$</span> pip install docreader-ocr
+              <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></svg>
+            </button>
+          </div>
+          <ul class="doc-chips">
+            <li>Паспорт РФ</li><li>СНИЛС</li><li>Аттестат</li><li>Диплом</li>
+          </ul>
+        </div>
+        <div class="hero-code">
+          <div class="code-head"><span></span><span></span><span></span><em>example.py</em></div>
+<pre><code><span class="k">from</span> docreader <span class="k">import</span> DocReader
+
+result = DocReader().process(<span class="s">"passport.jpg"</span>)
+
+<span class="k">for</span> doc <span class="k">in</span> result.documents:
+    print(doc.doc_type, doc.fields)
+
+<span class="c"># passport {'surname': 'Иванов',</span>
+<span class="c">#           'passport_num': '1234 567890', ...}</span></code></pre>
+        </div>
+      </div>
+      <div class="wrap stats">
+        <div class="stat"><b>97.5%</b><span>Accuracy классификатора</span></div>
+        <div class="stat"><b>90.0%</b><span>mAP@50 детектора полей</span></div>
+        <div class="stat"><b>87.3%</b><span>Word Accuracy OCR</span></div>
+        <div class="stat"><b>4</b><span>типа документов</span></div>
+      </div>
+    </section>
+
+    <!-- DEMO -->
+    <section class="section" id="demo">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">Живая демонстрация</p>
+          <h2>Загрузите фото документа</h2>
+          <p class="muted">Фото обрабатывается на этом сервере библиотекой <code>docreader-ocr</code> и нигде не сохраняется.
+            На одном снимке может быть несколько документов — библиотека найдёт каждый.</p>
+        </div>
+
+        <div class="demo-grid">
+          <aside class="panel controls">
+            <label class="dropzone" id="dropzone" tabindex="0">
+              <input type="file" id="fileInput" accept="image/*" hidden>
+              <div class="dz-empty" id="dzEmpty">
+                <svg viewBox="0 0 24 24" class="dz-icon"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+                <b>Перетащите фото сюда</b>
+                <span>или нажмите, чтобы выбрать · Ctrl+V для вставки</span>
+                <small>JPG, PNG, WEBP · до 20 МБ</small>
+              </div>
+              <img id="dzPreview" alt="" hidden>
+            </label>
+
+            <div class="samples" id="samples" hidden>
+              <p class="label">Примеры</p>
+              <div class="sample-list" id="sampleList"></div>
+            </div>
+
+            <details class="settings">
+              <summary>Параметры пайплайна</summary>
+              <div class="field">
+                <label for="clsConf">Порог классификатора <output id="clsConfOut">0.30</output></label>
+                <input type="range" id="clsConf" min="0.25" max="0.95" step="0.05" value="0.30">
+                <small>PipelineConfig.classifier_confidence</small>
+              </div>
+              <div class="field">
+                <label for="detConf">Порог детектора полей <output id="detConfOut">0.25</output></label>
+                <input type="range" id="detConf" min="0.25" max="0.95" step="0.05" value="0.25">
+                <small>PipelineConfig.detector_confidence</small>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="deskew">
+                <span>Выравнивание (deskew)</span>
+              </label>
+              <p class="settings-note">Пороги ниже 0.25 не действуют: YOLO отсекает такие детекции своим порогом по умолчанию.</p>
+            </details>
+
+            <button class="btn btn-primary btn-block" id="runBtn" type="button" disabled>Распознать</button>
+            <p class="hint" id="runHint">Выберите изображение</p>
+          </aside>
+
+          <div class="results" id="results">
+            <div class="placeholder" id="placeholder">
+              <div class="ph-steps">
+                <div><span>1</span>Классификатор находит документы и определяет тип</div>
+                <div><span>1a</span>Resolver различает аттестат и диплом</div>
+                <div><span>2</span>Детектор вырезает поля документа</div>
+                <div><span>3</span>OCR распознаёт текст каждого поля</div>
+              </div>
+              <p class="muted">Результат появится здесь</p>
+            </div>
+
+            <div class="loading panel" id="loading" hidden>
+              <div class="spinner"></div>
+              <div>
+                <b>Распознаём документ…</b>
+                <p class="muted"><span id="elapsed">0.0</span> с · на CPU обработка одного документа занимает до 30 с</p>
+              </div>
+            </div>
+
+            <div class="error panel" id="error" hidden></div>
+
+            <div id="output" hidden>
+              <div class="timeline panel" id="timeline"></div>
+
+              <div class="panel source-panel">
+                <div class="panel-head">
+                  <h3>Исходное фото</h3>
+                  <span class="muted" id="foundCount"></span>
+                </div>
+                <div class="figure" id="sourceFigure"></div>
+              </div>
+
+              <div class="doc-tabs" id="docTabs" role="tablist"></div>
+              <div id="docView"></div>
+
+              <div class="panel">
+                <div class="panel-head">
+                  <div class="seg" role="tablist">
+                    <button class="active" data-out="json" type="button">JSON</button>
+                    <button data-out="py" type="button">Python</button>
+                  </div>
+                  <div class="head-actions">
+                    <button class="btn btn-ghost btn-sm" id="copyOut" type="button">Копировать</button>
+                    <button class="btn btn-ghost btn-sm" id="downloadOut" type="button">Скачать JSON</button>
+                  </div>
+                </div>
+                <pre class="code-out"><code id="codeOut"></code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PIPELINE -->
+    <section class="section alt" id="pipeline">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">Архитектура</p>
+          <h2>Трёхуровневый ИИ-конвейер</h2>
+          <p class="muted">Каждый компонент заменяем: свой классификатор, детектор или OCR-движок передаются в <code>DocReader(...)</code>.</p>
+        </div>
+        <ol class="pipe">
+          <li>
+            <span class="pipe-n">1</span>
+            <h3>Классификатор</h3>
+            <p class="pipe-model">YOLO11n-obb</p>
+            <p>Находит все документы на фото, определяет тип и вырезает повёрнутый (OBB) кроп каждого.</p>
+            <p class="pipe-metric"><b>97.5%</b> accuracy</p>
+          </li>
+          <li>
+            <span class="pipe-n">1a</span>
+            <h3>Resolver</h3>
+            <p class="pipe-model">YOLO + EasyOCR + rapidfuzz</p>
+            <p>Аттестат и диплом визуально почти одинаковы — их различает текст поля «уровень образования».</p>
+            <p class="pipe-metric">только для <b>attestat/diplom</b></p>
+          </li>
+          <li>
+            <span class="pipe-n">2</span>
+            <h3>Детектор полей</h3>
+            <p class="pipe-model">YOLO11n-obb × 4</p>
+            <p>Отдельная модель на каждый тип документа находит 6–10 полей: ФИО, даты, номера, кем выдан.</p>
+            <p class="pipe-metric"><b>90.0%</b> mAP@50</p>
+          </li>
+          <li>
+            <span class="pipe-n">3</span>
+            <h3>OCR</h3>
+            <p class="pipe-model">EasyOCR · VGG–BiLSTM–CTC</p>
+            <p>Дообучен на 11 752 примерах полей российских документов: кириллица, латиница, цифры.</p>
+            <p class="pipe-metric"><b>87.3%</b> word accuracy</p>
+          </li>
+        </ol>
+
+        <div class="why">
+          <div>
+            <h4>Почему OBB, а не обычные рамки?</h4>
+            <p>Документы на фото повёрнуты. Повёрнутая рамка точнее обтягивает поле, и кроп для OCR чище: IoU вырос с ~0.78 до 0.96.</p>
+          </div>
+          <div>
+            <h4>Почему EasyOCR?</h4>
+            <p>После дообучения EasyOCR показал 87.3% word accuracy против ~79% у PaddleOCR, и его проще конфигурировать.</p>
+          </div>
+          <div>
+            <h4>Почему CTC Loss?</h4>
+            <p>Не нужно посимвольное выравнивание: для обучения достаточно строки целиком, длина текста может быть любой.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- METRICS -->
+    <section class="section" id="metrics">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">Результаты</p>
+          <h2>Метрики на тестовой выборке</h2>
+          <p class="muted">Система работает как СППР: оператор получает большинство полей предзаполненными и проверяет их, а не вводит с нуля.</p>
+        </div>
+
+        <div class="metric-grid">
+          <div class="panel">
+            <h3>Точность по типам документов</h3>
+            <div class="bars" id="docBars"></div>
+            <div class="legend">
+              <span><i class="sw sw-a"></i>Field Accuracy — доля верных полей</span>
+              <span><i class="sw sw-b"></i>Full Document Accuracy — все поля верны</span>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Детекция полей (примеры зон)</h3>
+            <div class="table-wrap">
+              <table class="mtable">
+                <thead><tr><th>Зона</th><th>Precision</th><th>Recall</th><th>F1</th><th>IoU</th><th>N</th></tr></thead>
+                <tbody>
+                  <tr><td><code>birth_city</code></td><td>100.0%</td><td>96.7%</td><td>98.3%</td><td>92.3%</td><td>30</td></tr>
+                  <tr><td><code>dateOfBirth</code></td><td>81.3%</td><td>89.7%</td><td>85.3%</td><td>89.5%</td><td>29</td></tr>
+                  <tr><td><code>fio</code></td><td>92.2%</td><td>96.5%</td><td>94.3%</td><td>98.9%</td><td>86</td></tr>
+                  <tr><td><code>lvl</code></td><td>98.3%</td><td>98.3%</td><td>98.3%</td><td>99.4%</td><td>57</td></tr>
+                  <tr><td><code>issued_by</code></td><td>96.8%</td><td>100.0%</td><td>98.4%</td><td>95.0%</td><td>30</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="impact">
+          <div><b>3–10 мин</b><span>ручной ввод одного пакета документов</span></div>
+          <div><b>~150 ч</b><span>в год на одного оператора</span></div>
+          <div><b>до 5%</b><span>ошибок при ручном вводе данных</span></div>
+          <div><b>15–30 с</b><span>автоматическая обработка документа</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTEGRATION -->
+    <section class="section alt" id="integration">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">Интеграция</p>
+          <h2>Три строки кода, и система работает</h2>
+        </div>
+        <div class="int-grid">
+          <div class="int-code">
+            <div class="code-head"><span></span><span></span><span></span><em>Настройка</em></div>
+<pre><code><span class="k">from</span> docreader <span class="k">import</span> DocReader, PipelineConfig
+
+config = PipelineConfig(
+    device=<span class="s">"cuda"</span>,
+    classifier_confidence=<span class="n">0.3</span>,
+    detector_confidence=<span class="n">0.25</span>,
+    enable_deskew=<span class="k">True</span>,
+)
+
+<span class="k">with</span> DocReader(config) <span class="k">as</span> reader:
+    page = reader.process(<span class="s">"scan.jpg"</span>)
+    print(page.to_dict())</code></pre>
+          </div>
+          <ul class="benefits">
+            <li><b>152-ФЗ</b><span>Данные не покидают инфраструктуру. Никаких внешних серверов.</span></li>
+            <li><b>Любая система</b><span>1С, CRM, ERP, мобильное приложение — без переписывания процессов.</span></li>
+            <li><b>Расширяемость</b><span>Новый тип документа: дообучить модель и добавить строку в конфиг.</span></li>
+            <li><b>Без абонплаты</b><span>В отличие от облачных API, никаких лимитов и ежемесячных платежей.</span></li>
+          </ul>
+        </div>
+
+        <h3 class="sub">Поддерживаемые документы и поля</h3>
+        <div class="docs-grid" id="docsGrid"></div>
+      </div>
+    </section>
+
+    <!-- TEAM -->
+    <section class="section" id="team">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">Команда</p>
+          <h2>Люди, которые это сделали</h2>
+          <p class="muted">ФГБОУ ВО «МГТУ им. Г.И. Носова» · 2026</p>
+        </div>
+        <div class="team">
+          <div class="person panel">
+            <div class="avatar">МК</div>
+            <h3>Кардаш Михаил</h3>
+            <p class="role">Специалист по большим данным, ООО «ММК-Информсервис»</p>
+            <ul><li>Модели детекции полей</li><li>Модель распознавания символов</li><li>Разметка данных</li><li>Сборка библиотеки</li></ul>
+          </div>
+          <div class="person panel">
+            <div class="avatar">РА</div>
+            <h3>Абзелилов Руслан</h3>
+            <p class="role">Инженер-программист, ООО «ОСК»</p>
+            <ul><li>Модель классификации</li><li>Эксперименты с моделями</li><li>Разметка данных</li><li>Сборка библиотеки</li></ul>
+          </div>
+          <div class="person panel">
+            <div class="avatar">ЕК</div>
+            <h3>Карманова Екатерина</h3>
+            <p class="role">Научный руководитель, к.п.н., доцент кафедры БИиИТ</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div>
+        <b>docreader-ocr</b>
+        <span class="muted" id="footVersion"></span>
+      </div>
+      <nav>
+        <a href="https://pypi.org/project/docreader-ocr/" target="_blank" rel="noopener">PyPI</a>
+        <a href="https://github.com/mishanyacorleone/docreader" target="_blank" rel="noopener">GitHub</a>
+        <span class="muted">MIT License</span>
+      </nav>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

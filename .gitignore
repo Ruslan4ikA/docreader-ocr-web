@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+.claude/
+
+# фото в samples/ могут содержать персональные данные
+app/static/samples/*
+!app/static/samples/.gitkeep
